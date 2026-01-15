@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>文件上传</title>
+</head>
+<body>
+    <h2>上传文件到 /table-extract</h2>
+    
+    <form action="/SouplePDF_Web/table-extract?action=addTask" method="post" enctype="multipart/form-data">
+        <label for="file">选择文件：</label>
+        <input type="file" id="file" name="file">
+        <br><br>
+        <input type="submit" value="上传文件">
+    </form>
+</body>
+</html>
