@@ -8,6 +8,7 @@ public class Helper {
 	public static ByteBuffer mergeJsonAndData(JSONObject json,byte[] data) {
 		byte[] json_bytes = json.toString().getBytes();
 	    ByteBuffer buffer = ByteBuffer.allocate(json_bytes.length+data.length+4);
+	    //注：ByteBuffer使用大端序(高字节在低内存)
 	    buffer.putInt(json_bytes.length);
 	    buffer.put(json_bytes);
 	    buffer.put(data);

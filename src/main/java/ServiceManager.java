@@ -78,9 +78,11 @@ public class ServiceManager {
 	
 	// 分发接收到的消息到实例
 	public static void dispatchMessage(byte[] data) {
-		if(data.length < 2) return;
-		int json_length = (((int)data[0])<<8) + (int)data[1];
-		JSONObject json = new JSONObject(new String(data,2,json_length));
+		System.out.println("dispatchMessage("+data.length);
+		if(data.length < 4) return;
+		int json_length = (((int)data[0])<<24) + (((int)data[1])<<16)
+				       +(((int)data[2])<<8)+((int)data[3]);
+		JSONObject json = new JSONObject(new String(data,4,json_length));
 		System.out.println(json);
 		String task_id = json.getString("task_id");
 		if(task_id == null) return;

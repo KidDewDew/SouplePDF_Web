@@ -33,6 +33,8 @@ public class ServiceWebSocket {
 			}
 			return;
 		}
+		session.setMaxBinaryMessageBufferSize(50 * 1024 * 1024);  // 50MB
+	    session.setMaxTextMessageBufferSize(64 * 1024);      // 64KB
 		ServiceManager.addService(service_name,session);
 		try {
 			//发送初始消息
@@ -42,12 +44,22 @@ public class ServiceWebSocket {
 		}
     }
 	
+//	@OnMessage
+//    public void onMessage(Session session, ByteBuffer byteBuffer) {
+//        byte[] data = new byte[byteBuffer.remaining()];
+//        byteBuffer.get(data);
+//        ServiceManager.dispatchMessage(data);
+//    }
+	
 	@OnMessage
-    public void onMessage(Session session, ByteBuffer byteBuffer) {
-        byte[] data = new byte[byteBuffer.remaining()];
-        byteBuffer.get(data);
-        ServiceManager.dispatchMessage(data);
-    }
+    public void onBinaryMessage(byte[] data, Session session) {
+		ServiceManager.dispatchMessage(data);
+	}
+	
+	@OnMessage
+	public void onTextMessage(String message, Session session) {
+	    System.out.println("Text message: " + message);
+	}
 	
 	@OnClose
     public void onClose(Session session) {

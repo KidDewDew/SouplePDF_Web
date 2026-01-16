@@ -41,6 +41,7 @@ public class Servlet_PdfTableExtract extends HttpServlet {
 			boolean finished = json.getBoolean("finished"); //任务是否完成
 			if(finished) {
 				//已完成的话，raw_data从64字节往后即一个zip文件
+				System.out.println("Task "+task_id+" finished.");
 			}
 		}
 	}
@@ -59,16 +60,19 @@ public class Servlet_PdfTableExtract extends HttpServlet {
 	    if(action.equals("addTask")) {
 		    //添加表格提取任务
 	    	//获取pdf文件
-	    	Part part = request.getPart("file");
+	    	Part part = null;
+	    	try {
+	    		part = request.getPart("file");
+	    	} catch(Exception exception) {
+	    		response.setStatus(400);
+				response.getWriter().write("{\"errorMsg\":\"请正确上传PDF文件\"}");
+	    	}
 	    	System.out.println("part file.size:"+part.getSize());
 	    	
 	    	byte[] fileData;
             try (InputStream inputStream = part.getInputStream()) {
                 fileData = inputStream.readAllBytes();
             }
-	    	ByteBuffer data = Helper.mergeJsonAndData(
-	    		new JSONObject().put("*","*"),fileData
-	    	);
 		    ServiceManager.TaskBundle taskBundle = 
 		    		ServiceManager.addTask("PDFTableExtract",new MyDealer());
 		    if(taskBundle == null) {
@@ -77,6 +81,12 @@ public class Servlet_PdfTableExtract extends HttpServlet {
 				response.getWriter().write("{\"errorMsg\":\"名称为PDFTableExtract的服务无正在运行的实例。请联系开发人员\"}");
 				return;
 		    }
+		    ByteBuffer data = Helper.mergeJsonAndData(
+		    		new JSONObject().put("oneExcelFile",false)
+		    					    .put("action","extract")
+		    					    .put("task_id",taskBundle.task_id)
+		    		,fileData
+		    	);
 	        try {
 	        	taskBundle.session.getBasicRemote().sendBinary(data);
 			} catch (IOException e) {
