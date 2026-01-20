@@ -12,8 +12,62 @@
 		<div>SouplePDF 在线工具</div>
 	</div>
 	<div class="main_ct">
+		<div class="main_left_float">
+			<div id="left_ct" class="left_ct">
+			</div>
+			<div class="left_ct_decoration">
+			</div>
+		</div>
+		<iframe id="iframe" class="iframe_right" src='https://www.baidu.com'>
+		</iframe>
 	</div>
 	<div class="footer_bar">
 	</div>
 </body>
+<script>
+	const leftTabs = ['a1','a2','a3','a4','a5','a6','a7','a8','a9']
+	const tabFor = {'a1':['pdf_table_extract.html','PDF表格提取'],
+					'a2':['','PDF字体提取'],
+					'a3':['','PDF图片提取'],
+					'a4':['','PDF转WORD'],
+					'a5':['','PDF合并'],
+					'a6':['','PDF拆分'],
+					'a7':['','PDF添加页码'],
+					'a8':['','PDF添加页眉页脚'],
+					'a9':['','PDF添加水印']}
+	const leftTab_ct = document.getElementById('left_ct')
+	var current_selected_tabName = '';
+	//初始化页面
+	function init() {
+		for(const tabName of leftTabs) {
+			const el = document.createElement('div')
+			el.className = 'a no-select'
+			el.id = tabName
+			el.innerHTML = tabFor[tabName][1]
+			el.onclick = function() {
+				whenLeftTabFor(tabName);
+			}
+			const splitline = document.createElement('div')
+			splitline.className = 'splitline'
+			leftTab_ct.appendChild(el);
+			leftTab_ct.appendChild(splitline);
+		}
+		const searchParams = new URLSearchParams(window.location.search);
+		if(searchParams.has("left_tab_for")) {
+			whenLeftTabFor(searchParams.get("left_tab_for"));
+		}
+	}
+	
+	//当左边的tab被点击时
+	function whenLeftTabFor(tabName) {
+		if(current_selected_tabName.length > 0) {
+			document.getElementById(current_selected_tabName).removeAttribute('selected')
+		}
+		document.getElementById(tabName).setAttribute('selected','')
+		current_selected_tabName = tabName
+	}
+	
+	init();
+	
+</script>
 </html>
