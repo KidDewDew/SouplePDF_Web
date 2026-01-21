@@ -31,6 +31,10 @@ public class ServiceManager {
 	private static final ConcurrentHashMap<String,Session>
 		task_to_session = new ConcurrentHashMap<>();
 	
+	// 每个任务积累的未发送的消息
+	private static final ConcurrentHashMap<String,String>
+		task_piled_notify_msg = new ConcurrentHashMap<>();
+	
 	//记录对任务的listener websocket，好通知前端。
 	private static final ConcurrentHashMap<String,Session>
 		task_notify_session = new ConcurrentHashMap<>();
@@ -80,16 +84,20 @@ public class ServiceManager {
 	public static void dispatchMessage(byte[] data) {
 		System.out.println("dispatchMessage("+data.length);
 		if(data.length < 4) return;
-		int json_length = (((int)data[0])<<24) + (((int)data[1])<<16)
-				       +(((int)data[2])<<8)+((int)data[3]);
-		JSONObject json = new JSONObject(new String(data,4,json_length));
-		System.out.println(json);
-		String task_id = json.getString("task_id");
-		if(task_id == null) return;
-		Callback callback = tasks.get(task_id);
-		Session session = task_to_session.get(task_id);
-		if(callback != null) {
-			callback.recv(task_id,session,json,data,json_length); //再分发消息给具体的任务
+		ByteBuffer buffer = ByteBuffer.wrap(data);
+	    int json_length = buffer.getInt();  // 自动处理字节顺序
+		try {
+			JSONObject json = new JSONObject(new String(data,4,json_length));
+			System.out.println(json);
+			String task_id = json.getString("task_id");
+			if(task_id == null) return;
+			Callback callback = tasks.get(task_id);
+			Session session = task_to_session.get(task_id);
+			if(callback != null) {
+				callback.recv(task_id,session,json,data,json_length+4); //再分发消息给具体的任务
+			}
+		}catch(Exception e) {
+			e.printStackTrace();
 		}
 	}
 	
@@ -116,6 +124,7 @@ public class ServiceManager {
 	public static void notifyTask(String task_id,String message) {
 		Session session = task_notify_session.get(task_id);
 		if(session == null) {
+			task_piled_notify_msg.put(task_id,message); //记录一下最后的消息
 			return; //通知失败，因为前端还没有和该服务器建立WebSocket连接
 		}
 		try {
@@ -161,9 +170,21 @@ public class ServiceManager {
 	
 	//设置任务监听WebSocket
 	public static boolean setTaskListener(String task_id,Session session) {
-		if(tasks.contains(task_id) == false)
+		if(tasks.containsKey(task_id) == false && 
+				task_piled_notify_msg.containsKey(task_id) == false) {
+			System.out.println("任务不存在");
 			return false; //不存在的任务
+		}
 		task_notify_session.put(task_id,session);
+		if(task_piled_notify_msg.containsKey(task_id)) {
+			try {
+				//发送记录的最后一条消息
+				session.getBasicRemote().sendText(task_piled_notify_msg.get(task_id));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			task_piled_notify_msg.remove(task_id);
+		}
 		return true;
 	}
 }

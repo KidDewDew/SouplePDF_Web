@@ -1,5 +1,8 @@
 
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -38,10 +41,49 @@ public class Servlet_PdfTableExtract extends HttpServlet {
 		@Override
 		public void recv(String task_id, Session session, JSONObject json, byte[] raw_data,
 					int data_pos) {
+			System.out.println("recv: "+json.toString());
+			if(json.has("finished") == false) {
+				return;
+			}
 			boolean finished = json.getBoolean("finished"); //任务是否完成
 			if(finished) {
-				//已完成的话，raw_data从64字节往后即一个zip文件
+				if(!json.has("succeeded")) {
+					return;
+				}
+				boolean succeeded = json.getBoolean("succeeded");
+				//已完成的话，raw_data从data_pos字节(含)往后即一个zip/xlsx文件
 				System.out.println("Task "+task_id+" finished.");
+				JSONObject rjson = new JSONObject();
+				if(succeeded) {
+					String catalinaBase = System.getProperty("catalina.base");
+					System.out.println(catalinaBase);
+					if(json.has("suffix")) {
+						String filename_1 = "/temp/"+Helper.generateDateTimeRandom()+json.getString("suffix");
+						String filename = catalinaBase+filename_1;
+						rjson.put("download_link",filename_1);
+						try(FileOutputStream fos = new FileOutputStream(filename)) {
+							fos.write(raw_data,data_pos,raw_data.length - data_pos);
+						} catch (FileNotFoundException e) {
+							e.printStackTrace();
+							succeeded = false;
+						} catch (IOException e) {
+							e.printStackTrace();
+							succeeded = false;
+						}
+					} else {
+						succeeded = false;
+						rjson.put("errorMsg","服务器处理异常");
+					}
+				} else {
+					if(json.has("failed_reason")) {
+						rjson.put("errorMsg",json.getString("failed_reason"));
+					}
+				}
+				rjson.put("succeeded",succeeded);
+				rjson.put("finished",true);
+				System.out.println(rjson.toString());
+				// 通过websocket通知前端
+				ServiceManager.notifyTask(task_id,rjson.toString());
 			}
 		}
 	}
@@ -82,7 +124,7 @@ public class Servlet_PdfTableExtract extends HttpServlet {
 				return;
 		    }
 		    ByteBuffer data = Helper.mergeJsonAndData(
-		    		new JSONObject().put("oneExcelFile",false)
+		    		new JSONObject().put("oneExcelFile",request.getParameter("oneExcelFile").equals("single"))
 		    					    .put("action","extract")
 		    					    .put("task_id",taskBundle.task_id)
 		    		,fileData
@@ -93,7 +135,7 @@ public class Servlet_PdfTableExtract extends HttpServlet {
 				e.printStackTrace();
 			}
 		    //返回task_id
-		    response.getWriter().write(String.format("{\"task_id\":\"%s\"",taskBundle.task_id));
+		    response.getWriter().write(String.format("{\"task_id\":\"%s\"}",taskBundle.task_id));
 	    }  
 	}
 

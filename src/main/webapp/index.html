@@ -4,21 +4,23 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>SouplePDF 在线工具</title>
-	<link rel="stylesheet" type="text/css" href="./base.css">
+	<link rel="stylesheet" type="text/css" href="base.css">
 </head>
 <body>
 	<div class="nav_bar">
-		<img src="./r/souple_icon.png">
-		<div>SouplePDF 在线工具</div>
+		<img src="r/souple_icon.png">
+		<div class="nav_title">SouplePDF 在线工具</div>
+		<div style="flex-grow:1"></div>
+		<a href="#">更多工具</a>
+		<a href="#">产品下载</a>
+		<a href="#">关于</a>
 	</div>
 	<div class="main_ct">
 		<div class="main_left_float">
 			<div id="left_ct" class="left_ct">
 			</div>
-			<div class="left_ct_decoration">
-			</div>
 		</div>
-		<iframe id="iframe" class="iframe_right" src='https://www.baidu.com'>
+		<iframe id="iframe" class="iframe_right" src="">
 		</iframe>
 	</div>
 	<div class="footer_bar">
@@ -27,15 +29,16 @@
 <script>
 	const leftTabs = ['a1','a2','a3','a4','a5','a6','a7','a8','a9']
 	const tabFor = {'a1':['pdf_table_extract.html','PDF表格提取'],
-					'a2':['','PDF字体提取'],
-					'a3':['','PDF图片提取'],
-					'a4':['','PDF转WORD'],
-					'a5':['','PDF合并'],
-					'a6':['','PDF拆分'],
-					'a7':['','PDF添加页码'],
-					'a8':['','PDF添加页眉页脚'],
-					'a9':['','PDF添加水印']}
+					'a2':['not_resolve.html','PDF字体提取'],
+					'a3':['not_resolve.html','PDF图片提取'],
+					'a4':['not_resolve.html','PDF转WORD'],
+					'a5':['not_resolve.html','PDF合并'],
+					'a6':['not_resolve.html','PDF拆分'],
+					'a7':['not_resolve.html','PDF添加页码'],
+					'a8':['not_resolve.html','PDF添加页眉页脚'],
+					'a9':['not_resolve.html','PDF添加水印']}
 	const leftTab_ct = document.getElementById('left_ct')
+	const iframe = document.getElementById('iframe')
 	var current_selected_tabName = '';
 	//初始化页面
 	function init() {
@@ -55,6 +58,8 @@
 		const searchParams = new URLSearchParams(window.location.search);
 		if(searchParams.has("left_tab_for")) {
 			whenLeftTabFor(searchParams.get("left_tab_for"));
+		} else {
+			whenLeftTabFor("a1");
 		}
 	}
 	
@@ -64,6 +69,7 @@
 			document.getElementById(current_selected_tabName).removeAttribute('selected')
 		}
 		document.getElementById(tabName).setAttribute('selected','')
+		iframe.src = tabFor[tabName][0]
 		current_selected_tabName = tabName
 	}
 	

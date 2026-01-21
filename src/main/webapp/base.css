@@ -1,3 +1,7 @@
+* {
+    font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+}
+
 body {
 	margin: 0;
 }
@@ -5,9 +9,17 @@ body {
 .nav_bar {
 	display: flex;
 	align-items: center;
-	box-shadow: 0 0 8px rgba(0,0,0,0.08);
-	height: 48px;
+	box-shadow: 0 2px 16px rgba(0,0,0,0.2);
+	height: 64px;
 	padding-left: 15px;
+	padding-right: 10px;
+	gap: 12px;
+	font-size: 1.2em;
+}
+
+.nav_title {
+	font-size: 1.1em;
+	font-weight: 500;
 }
 
 .main_ct {
@@ -18,7 +30,7 @@ body {
 .main_left_float {
 	margin-left: 16px;
 	margin-top: 22px;
-	width: 180px;
+	width: 240px;
 }
 
 .left_ct {
@@ -30,11 +42,12 @@ body {
 .left_ct > .a {
 	text-decoration: none;
 	color: inherit;
-	height: 48px;
-	line-height: 48px;
-	border-radius: 2px;
+	height: 56px;
+	line-height: 56px;
+	border-radius: 0px;
 	padding-left: 3px;
 	cursor: pointer;
+	font-size: 1.2em;
 }
 
 .left_ct > .a:hover {
@@ -64,8 +77,26 @@ body {
 
 .iframe_right {
 	flex-grow: 1;
+	margin-right: 10vw;
 	height: 700px;
 	border: none;
     outline: none;
 	margin-top: 6px;
+}
+
+.nav_bar > a {
+	text-decoration: none;
+	color: inherit;
+	padding: 0 20px;
+	transition: background-color 0.3s;
+	text-align: center;
+	height: 64px;
+	line-height: 64px;
+}
+.nav_bar > a:hover {
+	background-color: #F7F5B8;
+}
+.nav_bar > a:active {
+	background-color: #F7F5B8;
+	transform: scale(1,1.05);
 }
